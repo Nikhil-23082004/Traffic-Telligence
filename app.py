@@ -14,7 +14,7 @@ from xgboost import XGBRegressor
 app = Flask(__name__)
 
 try:
-    client = MongoClient('mongodb://localhost:27017/')
+    client = MongoClient('mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence')
     db = client['APSCHE']
     users_collection = db['userdata']
 except Exception as e:
@@ -182,4 +182,5 @@ def process():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
+
 
