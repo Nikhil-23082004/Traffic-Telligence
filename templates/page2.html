@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page 2</title>
+</head>
+<body>
+    <h1>Welcome to Page 2</h1>
+    <p>This is the second page. You arrived here by clicking the button on Page 1.</p>
+    <p>Click the button below to return to Page 1.</p>
+    <form action="{{ url_for('page1') }}">
+        <button type="submit">Back to Page 1</button>
+    </form>
+</body>
+</html>
