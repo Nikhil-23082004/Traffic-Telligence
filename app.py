@@ -15,7 +15,7 @@ app = Flask(__name__)
 # ---------------- Database Connection ----------------
 try:
     client = MongoClient(
-        'mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence'
+        os.getenv("MONGO_URI", "mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence")
     )
     db = client['APSCHE']
     users_collection = db['userdata']
@@ -25,7 +25,7 @@ except Exception as e:
 # ---------------- OTP and Email Config ----------------
 otp_store = {}
 EMAIL_SENDER = "clginternshipacc@gmail.com"
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "asrn pwxu jile azwt")  # ⚠️ better to keep only in Render env vars
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "asrn pwxu jile azwt")  # ⚠️ use Render env var
 
 
 def send_email(email, otp):
@@ -46,11 +46,11 @@ def send_email(email, otp):
         print(f"Error sending email: {e}")
         return False
 
+
 # ---------------- Routes ----------------
 @app.route('/')
 def index():
     return render_template('login.html')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -81,7 +81,6 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.json
@@ -103,7 +102,6 @@ def send_otp():
     else:
         return jsonify({"message": "Failed to send OTP"}), 500
 
-
 @app.route('/verify-otp', methods=['POST'])
 def verify_otp():
     data = request.json
@@ -119,7 +117,6 @@ def verify_otp():
 
     return jsonify({"message": "Incorrect OTP. Try again"}), 400
 
-
 @app.route('/interface')
 def interface():
     return render_template('interface.html')
@@ -127,14 +124,15 @@ def interface():
 
 # ---------------- Load Model and Encoders ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
 
-with open(os.path.join(BASE_DIR, "templates", "encoder.pkl"), "rb") as f:
+with open(os.path.join(MODELS_DIR, "encoder.pkl"), "rb") as f:
     encoders = pickle.load(f)
 
 weather_encoder = encoders['weather_encoder']
 scaler = encoders['scaler']
 
-with open(os.path.join(BASE_DIR, "templates", "model.pkl"), "rb") as f:
+with open(os.path.join(MODELS_DIR, "model.pkl"), "rb") as f:
     model = pickle.load(f)
 
 
@@ -198,5 +196,4 @@ def process():
 
 # ---------------- Run Server ----------------
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',debug=True)
-
+    app.run(host='0.0.0.0', debug=True)
