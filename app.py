@@ -115,13 +115,13 @@ def verify_otp():
 @app.route('/interface')
 def interface():
     return render_template('interface.html')
-with open(r"C:\Users\nikhi\OneDrive\Desktop\Traffic-Telligence-Advanced-Traffic-Volume-Estimation-with-Machine-Learning\auth\templates\encoder.pkl", 'rb') as f:
+with open(r"templates\encoder.pkl", 'rb') as f:
     encoders = pickle.load(f)
 
 weather_encoder = encoders['weather_encoder']
 scaler = encoders['scaler']
 
-with open(r"C:\Users\nikhi\OneDrive\Desktop\Traffic-Telligence-Advanced-Traffic-Volume-Estimation-with-Machine-Learning\auth\templates\model.pkl", 'rb') as f:
+with open(r"templates\model.pkl", 'rb') as f:
     model = pickle.load(f)
 
 @app.route('/process', methods=['POST'])
@@ -182,3 +182,4 @@ def process():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
+
