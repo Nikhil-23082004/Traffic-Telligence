@@ -7,23 +7,26 @@ import pickle
 from pymongo import MongoClient
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from xgboost import XGBRegressor
 
 app = Flask(__name__)
 
+# ---------------- Database Connection ----------------
 try:
-    client = MongoClient('mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence')
+    client = MongoClient(
+        'mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence'
+    )
     db = client['APSCHE']
     users_collection = db['userdata']
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
 
+# ---------------- OTP and Email Config ----------------
 otp_store = {}
-
 EMAIL_SENDER = "clginternshipacc@gmail.com"
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "asrn pwxu jile azwt") 
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "asrn pwxu jile azwt")  # ⚠️ better to keep only in Render env vars
+
 
 def send_email(email, otp):
     subject = "Your OTP Code"
@@ -43,9 +46,11 @@ def send_email(email, otp):
         print(f"Error sending email: {e}")
         return False
 
+# ---------------- Routes ----------------
 @app.route('/')
 def index():
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -76,6 +81,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.json
@@ -97,6 +103,7 @@ def send_otp():
     else:
         return jsonify({"message": "Failed to send OTP"}), 500
 
+
 @app.route('/verify-otp', methods=['POST'])
 def verify_otp():
     data = request.json
@@ -112,22 +119,29 @@ def verify_otp():
 
     return jsonify({"message": "Incorrect OTP. Try again"}), 400
 
+
 @app.route('/interface')
 def interface():
     return render_template('interface.html')
-with open(r"templates\encoder.pkl", 'rb') as f:
+
+
+# ---------------- Load Model and Encoders ----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(BASE_DIR, "templates", "encoder.pkl"), "rb") as f:
     encoders = pickle.load(f)
 
 weather_encoder = encoders['weather_encoder']
 scaler = encoders['scaler']
 
-with open(r"templates\model.pkl", 'rb') as f:
+with open(os.path.join(BASE_DIR, "templates", "model.pkl"), "rb") as f:
     model = pickle.load(f)
 
+
+# ---------------- Prediction Route ----------------
 @app.route('/process', methods=['POST'])
 def process():
     try:
-        
         holiday = request.form.get('holiday', "").strip()
         temp = request.form.get('temp', "").strip()
         rain = request.form.get('rain', "").strip()
@@ -162,26 +176,26 @@ def process():
         ])
 
         input_scaled = scaler.transform(input_data)
-
         predicted_volume = model.predict(input_scaled)[0]
 
-        return render_template('result.html',
-                               predicted_volume=round(predicted_volume, 2),
-                               inputs={
-                                   'Holiday': holiday,
-                                   'Temp (K)': temp,
-                                   'Rain (mm)': rain,
-                                   'Snow (mm)': snow,
-                                   'Weather': weather,
-                                   'Date': f"{day}/{month}/{year}",
-                                   'Time': f"{hours}:{minutes}:{seconds}"
-                               })
+        return render_template(
+            'result.html',
+            predicted_volume=round(predicted_volume, 2),
+            inputs={
+                'Holiday': holiday,
+                'Temp (K)': temp,
+                'Rain (mm)': rain,
+                'Snow (mm)': snow,
+                'Weather': weather,
+                'Date': f"{day}/{month}/{year}",
+                'Time': f"{hours}:{minutes}:{seconds}"
+            }
+        )
 
     except Exception as e:
         return jsonify({"error": f"Processing error: {str(e)}"}), 500
 
+
+# ---------------- Run Server ----------------
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
-
-
-
+    app.run(host='0.0.0.0', port=5000, debug=True)
