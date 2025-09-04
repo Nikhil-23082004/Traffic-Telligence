@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Traffic Volume Prediction</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+       background-image: url('{{ url_for('static', filename='images/car1.jpg') }}');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-attachment: fixed;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.3); /* Transparent white */
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-top: 40px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      color: #000; /* Ensure text is readable */
+    }
+
+    .container label,
+    .container h2 {
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-sm-8">
+      <h2 class="text-center">Traffic Volume Prediction</h2>
+      <form action="/process" method="POST" onsubmit="return validateForm()">
+        <div class="form-group">
+          <label for="holiday"><h4>Is it a Holiday?</h4></label>
+          <select class="form-control" id="holiday" name="holiday" required>
+            <option value="0">None</option>
+            <option value="1">Independence Day</option>
+            <option value="1">Republic Day</option>
+            <option value="1">Gandhi Jayanthi</option>
+            <option value="1">Holi</option>
+            <option value="1">Good Friday</option>
+            <option value="1">Christmas</option>
+            <option value="1">Dussera</option>
+            <option value="1">Eid-ul-Fitr</option>
+            <option value="1">Diwali</option>
+            <option value="1">Eid-ul-Adha</option>
+            <option value="1">Sunday</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="temp"><h4>Temperature (in Kelvin)</h4></label>
+          <input type="number" class="form-control" id="temp" name="temp" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label for="rain"><h4>Rain (in mm)</h4></label>
+          <input type="number" class="form-control" id="rain" name="rain" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label for="snow"><h4>Snow (in mm)</h4></label>
+          <input type="number" class="form-control" id="snow" name="snow" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label for="weather"><h4>Weather Condition</h4></label>
+          <select class="form-control" id="weather" name="weather" required>
+            <option value="" disabled selected>Select Weather</option>
+            <option value="Clear">Clear</option>
+            <option value="Clouds">Clouds</option>
+            <option value="Rain">Rain</option>
+            <option value="Drizzle">Drizzle</option>
+            <option value="Mist">Mist</option>
+            <option value="Haze">Haze</option>
+            <option value="Fog">Fog</option>
+            <option value="Thunderstorm">Thunderstorm</option>
+            <option value="Snow">Snow</option>
+            <option value="Squall">Squall</option>
+            <option value="Smoke">Smoke</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="day"><h4>Day</h4></label>
+          <input type="number" class="form-control" id="day" name="day" min="1" max="31" required>
+        </div>
+
+        <div class="form-group">
+          <label for="month"><h4>Month</h4></label>
+          <input type="number" class="form-control" id="month" name="month" min="1" max="12" required>
+        </div>
+
+        <div class="form-group">
+          <label for="year"><h4>Year</h4></label>
+          <input type="number" class="form-control" id="year" name="year" min="2000" max="2030" required>
+        </div>
+
+        <div class="form-group">
+          <label for="hours"><h4>Hour (24-hr format)</h4></label>
+          <input type="number" class="form-control" id="hours" name="hours" min="0" max="23" required>
+        </div>
+
+        <div class="form-group">
+          <label for="minutes"><h4>Minutes</h4></label>
+          <input type="number" class="form-control" id="minutes" name="minutes" min="0" max="59" required>
+        </div>
+
+        <div class="form-group">
+          <label for="seconds"><h4>Seconds</h4></label>
+          <input type="number" class="form-control" id="seconds" name="seconds" min="0" max="59" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Predict Traffic Volume</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function validateForm() {
+    const fields = ['temp', 'rain', 'snow', 'day', 'month', 'year', 'hours', 'minutes', 'seconds'];
+    for (let field of fields) {
+      const val = parseFloat(document.getElementById(field).value);
+      if (isNaN(val) || val < 0) {
+        alert(`${field} must be a non-negative number.`);
+        return false;
+      }
+    }
+
+    const day = parseInt(document.getElementById("day").value);
+    const month = parseInt(document.getElementById("month").value);
+    if (day > 31 || day < 1 || month < 1 || month > 12) {
+      alert("Enter a valid date.");
+      return false;
+    }
+
+    return true;
+  }
+</script>
+
+</body>
+</html>
