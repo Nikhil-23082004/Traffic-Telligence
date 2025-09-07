@@ -12,11 +12,10 @@ from xgboost import XGBRegressor
 
 app = Flask(__name__)
 
+MONGO_URI = os.getenv("MONGO_URI")
 # ---------------- Database Connection ----------------
 try:
-    client = MongoClient(
-        os.getenv("MONGO_URI", "mongodb+srv://nikhilnandanavanam123:11223344@traffic-telligence.imyrg7m.mongodb.net/?retryWrites=true&w=majority&appName=Traffic-telligence")
-    )
+    client = MongoClient(MONGO_URI)
     db = client['APSCHE']
     users_collection = db['userdata']
 except Exception as e:
@@ -197,3 +196,4 @@ def process():
 # ---------------- Run Server ----------------
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+
