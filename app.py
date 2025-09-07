@@ -13,6 +13,7 @@ from xgboost import XGBRegressor
 app = Flask(__name__)
 
 MONGO_URI = os.getenv("MONGO_URI")
+PASSWORD = os.getenv("PASSWORD")
 # ---------------- Database Connection ----------------
 try:
     client = MongoClient(MONGO_URI)
@@ -24,7 +25,7 @@ except Exception as e:
 # ---------------- OTP and Email Config ----------------
 otp_store = {}
 EMAIL_SENDER = "clginternshipacc@gmail.com"
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "asrn pwxu jile azwt")  # ⚠️ use Render env var
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", PASSWORD)  # ⚠️ use Render env var
 
 
 def send_email(email, otp):
@@ -196,4 +197,5 @@ def process():
 # ---------------- Run Server ----------------
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+
 
